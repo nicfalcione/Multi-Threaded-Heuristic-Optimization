@@ -7,7 +7,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Solution Test class
+ * Solution Object Test class
  * 
  * @author Nic Falcione & Corrine Fair
  *

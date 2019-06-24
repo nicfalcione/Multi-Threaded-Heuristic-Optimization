@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Main Heuristics Algorithm Class
@@ -14,22 +16,27 @@ import java.util.Random;
  */
 public class Heuristics {
 
+    AtomicInteger it = new AtomicInteger(0);
+
     /** Arraylist of threads */
     private ArrayList<OptimizationThread> threads = new ArrayList<OptimizationThread>();
 
     /** ArrayList holding most optimal 10 Dimensional solution values */
-    private ArrayList<Solution> Urn = new ArrayList<Solution>(
-            Constants.URN_SIZE.intValue());
+    private List<Solution> Urn = Collections
+            .synchronizedList(new ArrayList<Solution>(Constants.URN_SIZE));
 
     /** ArrayList holding most optimal 10 Dimensional solution values */
-    private ArrayList<RealNumberSolution> realsUrn = new ArrayList<RealNumberSolution>(
-            Constants.URN_SIZE.intValue());
+    private List<RealNumberSolution> realsUrn = Collections.synchronizedList(
+            new ArrayList<RealNumberSolution>(Constants.URN_SIZE));
 
     /** ArrayList holding most optimal 2D solution values */
     private ArrayList<TwoDSolution> twoDUrn = new ArrayList<TwoDSolution>();
 
     /** A randomizer */
     private static Random rand = new Random();
+
+    /** real number solution object to be kept track of */
+    private RealNumberSolution best = new RealNumberSolution();;
 
     /**
      * File I/O implementation to write values to given file. Uses same
@@ -62,16 +69,17 @@ public class Heuristics {
      * Populates the Urn for the 10 dimensional function algorithm
      */
     public void populateUrn() {
-        for (int i = 0; i < Constants.URN_SIZE.intValue(); i++) {
-            Urn.add(new Solution());
+        for (int i = 0; i < Constants.URN_SIZE; i++) {
+            getUrn().add(new Solution());
         }
     }
 
     /**
-     * Populates the Urn for the 10 dimensional function algorithm
+     * Populates the Urn for the 10 dimensional function algorithm with real
+     * numbers in a given range
      */
     public void populateRealsUrn() {
-        for (int i = 0; i < Constants.URN_SIZE.intValue(); i++) {
+        for (int i = 0; i < Constants.URN_SIZE; i++) {
             realsUrn.add(new RealNumberSolution());
         }
     }
@@ -80,7 +88,7 @@ public class Heuristics {
      * Populates the Urn for the 2D function algorithm
      */
     public void populateTwoDUrn() {
-        for (int i = 0; i < Constants.URN_SIZE.intValue(); i++) {
+        for (int i = 0; i < Constants.URN_SIZE; i++) {
             twoDUrn.add(new TwoDSolution());
         }
     }
@@ -95,9 +103,9 @@ public class Heuristics {
 //        // Counter for the iterations
         int iteration = 0;
 
-        int itCount = 0;
-
-        double obj = 0.0;
+//        int itCount = 0;
+//
+//        double obj = 0.0;
 
         // Main outer loop for the algorithm
         while (iteration < Constants.MAX_ITERATIONS) {
@@ -108,14 +116,19 @@ public class Heuristics {
                 random.randomizeSolution();
             }
 
+            // if not the first iteration, the 80% / 20% best-fit/random genetic
+            // heuristic is applied
             else if (iteration != 0) {
+                // Generates random double between 0.0 and 1.0
                 double r = Math.random();
 
+                // This is run {(1 - r) * 100%} of the time
                 if (r >= 0.2) {
                     synchronized (this) {
+                        // selects random index of urn to be compared with the
+                        // best in urn
                         int randIndex = rand.nextInt(
-                                ((Constants.URN_SIZE.intValue() - 1) - 0 + 1)
-                                        + 0);
+                                ((Constants.URN_SIZE - 1) - 0 + 1) + 0);
                         random = new RealNumberSolution(
                                 realsUrn.get(randIndex).getxValues());
                         for (int i = 0; i < Constants.X_LIST_SIZE; i++) {
@@ -130,67 +143,187 @@ public class Heuristics {
                             }
                         }
                     }
-                } else {
+                }
+                // This is run {abs(r - 1) * 100%} of the time and just tries a
+                // random solution
+                else {
                     random.randomizeSolution();
                 }
             }
 
+            // Counter for the inner loop
             int count = 0;
             while (count < Constants.MAX_REPS) {
+                // Create new Real Number Solution Object and calculate
+                // objective value
                 RealNumberSolution temp = new RealNumberSolution(
                         random.getxValues());
                 temp.calcObjectiveVal();
+
                 synchronized (this) {
-                    if (realsUrn.get(Constants.URN_SIZE.intValue() - 1)
+                    if (realsUrn.get(Constants.URN_SIZE - 1)
                             .getObjectiveVal() < temp.getObjectiveVal()) {
                         boolean isSame = false;
-                        for (int i = 0; i < Constants.URN_SIZE
-                                .intValue(); i++) {
+
+                        // Checks if anything in the Urn is the same as the
+                        // possible solution
+                        for (int i = 0; i < Constants.URN_SIZE; i++) {
                             if (Math.abs(realsUrn.get(i).getObjectiveVal()
-                                    - temp.getObjectiveVal()) < 0.0001) {
+                                    - temp.getObjectiveVal()) < 1.0) {
                                 isSame = true;
                             }
                         }
 
+                        // Breaks and tries process again if same objective val
+                        // is same as one in the urn
                         if (isSame) {
                             break;
                         }
 
-                        realsUrn.remove(Constants.URN_SIZE.intValue() - 1);
+                        // Remove last in Urn and add good solution to Urn
+
+                        realsUrn.remove(Constants.URN_SIZE - 1);
                         realsUrn.add(temp);
+
+                        // Sorts Urn from best to realsUrn.size
+                        Collections.sort(realsUrn);
+                        Collections.reverse(realsUrn);
+
                     }
                 }
-                synchronized (this) {
-                    Collections.sort(realsUrn);
-                    Collections.reverse(realsUrn);
-                    count++;
-                }
+
+                count++;
             }
 //              writeToFile(Urn.get(0));
             iteration++;
 
-            synchronized (this) {
-                if (iteration == 0) {
-                    obj = realsUrn.get(0).getObjectiveVal();
-                } else if (itCount >= Constants.STOP_CONDITION) {
-                    break;
-                } else {
-                    if (Math.abs(realsUrn.get(0).getObjectiveVal()
-                            - obj) > 0.0000000001) {
-                        obj = realsUrn.get(0).getObjectiveVal();
-                        itCount = 0;
+//            if (iteration == 0) {
+//                obj = realsUrn.get(0).getObjectiveVal();
+//            } else if (itCount >= Constants.STOP_CONDITION) {
+//                break;
+//            } else {
+//                if (Math.abs(realsUrn.get(0).getObjectiveVal()
+//                        - obj) > 0.0000000001) {
+//                    obj = realsUrn.get(0).getObjectiveVal();
+//                    itCount = 0;
+//                }
+//                itCount++;
+//            }
+        }
+
+        System.out.println("Took " + iteration + " iterations.");
+        return realsUrn.get(0).toString();
+    }
+
+    /**
+     * Runs the heuristic algorithm for the ten dimensional x function with All
+     * real numbers
+     * 
+     * @return String output to console
+     */
+    public String eightyTwentyAllRealsAlgorithm(
+            ArrayList<RealNumberSolution> tUrn) {
+//        // Counter for the iterations
+        int iteration = 0;
+
+        // Main outer loop for the algorithm
+        while (iteration < Constants.MAX_ITERATIONS) {
+            RealNumberSolution random = new RealNumberSolution();
+
+            // Randomizes solution on first iterations
+            if (iteration == 0) {
+                random.randomizeSolution();
+            }
+
+            // if not the first iteration, the 80% / 20% best-fit/random genetic
+            // heuristic is applied
+            else if (iteration != 0) {
+                // Generates random double between 0.0 and 1.0
+                double r = Math.random();
+
+                // This is run {(1 - r) * 100%} of the time
+                if (r >= 0.2) {
+//                    synchronized (this) {
+                    // selects random index of urn to be compared with the
+                    // best in urn
+                    int randIndex = rand
+                            .nextInt(((Constants.URN_SIZE - 1) - 0 + 1) + 0);
+                    random = new RealNumberSolution(
+                            tUrn.get(randIndex).getxValues());
+                    for (int i = 0; i < Constants.X_LIST_SIZE; i++) {
+                        if (Math.abs(tUrn.get(0).getxValues().get(i)
+                                - random.getxValues().get(i)) >= 0.0000001) {
+                            double randomX = (Constants.TWO_DIM_X_MIN
+                                    + (Constants.TWO_DIM_X_MAX
+                                            - Constants.TWO_DIM_X_MIN)
+                                            * rand.nextDouble());
+                            random.setxValues(i, randomX);
+                        }
                     }
+//                    }
                 }
-                itCount++;
+                // This is run {abs(r - 1) * 100%} of the time and just tries a
+                // random solution
+                else {
+                    random.randomizeSolution();
+                }
+            }
+
+            // Counter for the inner loop
+            int count = 0;
+            while (count < Constants.MAX_REPS) {
+                // Create new Real Number Solution Object and calculate
+                // objective value
+                RealNumberSolution temp = new RealNumberSolution(
+                        random.getxValues());
+                temp.calcObjectiveVal();
+
+//                synchronized (this) {
+                if (tUrn.get(Constants.URN_SIZE - 1).getObjectiveVal() < temp
+                        .getObjectiveVal()) {
+                    boolean isSame = false;
+
+                    // Checks if anything in the Urn is the same as the
+                    // possible solution
+                    for (int i = 0; i < Constants.URN_SIZE; i++) {
+                        if (Math.abs(tUrn.get(i).getObjectiveVal()
+                                - temp.getObjectiveVal()) < 1.0) {
+                            isSame = true;
+                        }
+                    }
+
+                    // Breaks and tries process again if same objective val
+                    // is same as one in the urn
+                    if (isSame) {
+                        break;
+                    }
+
+                    // Remove last in Urn and add good solution to Urn
+
+                    tUrn.remove(Constants.URN_SIZE - 1);
+                    tUrn.add(temp);
+
+                    // Sorts Urn from best to realsUrn.size
+                    Collections.sort(tUrn);
+                    Collections.reverse(tUrn);
+
+                }
+//                }
+
+                count++;
+            }
+//              writeToFile(Urn.get(0));
+            iteration++;
+        }
+        synchronized (this) {
+            if (tUrn.get(0).getObjectiveVal() > best.getObjectiveVal()) {
+                best = new RealNumberSolution(tUrn.get(0).getxValues());
+                best.calcObjectiveVal();
             }
         }
-//        Iterator<Solution> iter = Urn.iterator();
-//        while (iter.hasNext()) {
-//            System.out.println(iter.next().toString());
-//        }
+
         System.out.println("Took " + iteration + " iterations.");
-//        System.out.println(realsUrn.get(0).toString());
-        return realsUrn.get(0).toString();
+        return best.toString();
     }
 
     /**
@@ -221,11 +354,10 @@ public class Heuristics {
                 if (r >= 0.2) {
                     synchronized (this) {
                         int randIndex = rand.nextInt(
-                                ((Constants.URN_SIZE.intValue() - 1) - 0 + 1)
-                                        + 0);
-                        random = new Solution(Urn.get(randIndex).getxValues());
+                                ((Constants.URN_SIZE - 1) - 0 + 1) + 0);
+                        random = new Solution(getUrn().get(randIndex).getxValues());
                         for (int i = 0; i < Constants.X_LIST_SIZE; i++) {
-                            if (Urn.get(0).getxValues().get(i) != random
+                            if (getUrn().get(0).getxValues().get(i) != random
                                     .getxValues().get(i)) {
                                 int randomX = (rand.nextInt(
                                         (Constants.X_MAX - (Constants.X_MIN))
@@ -244,13 +376,16 @@ public class Heuristics {
             while (count < Constants.MAX_REPS) {
                 Solution temp = new Solution(random.getxValues());
                 temp.calcObjectiveVal();
+
+                double max = 0.0;
+
                 synchronized (this) {
-                    if (Urn.get(Constants.URN_SIZE.intValue() - 1)
-                            .getObjectiveVal() < temp.getObjectiveVal()) {
+                    max = getUrn().get(Constants.URN_SIZE - 1).getObjectiveVal();
+
+                    if (max < temp.getObjectiveVal()) {
                         boolean isSame = false;
-                        for (int i = 0; i < Constants.URN_SIZE
-                                .intValue(); i++) {
-                            if (Math.abs(Urn.get(i).getObjectiveVal()
+                        for (int i = 0; i < Constants.URN_SIZE; i++) {
+                            if (Math.abs(getUrn().get(i).getObjectiveVal()
                                     - temp.getObjectiveVal()) < 0.01) {
                                 isSame = true;
                             }
@@ -260,44 +395,38 @@ public class Heuristics {
                             break;
                         }
 
-                        Urn.remove(Constants.URN_SIZE.intValue() - 1);
-                        Urn.add(temp);
+                        getUrn().remove(Constants.URN_SIZE - 1);
+                        getUrn().add(temp);
+
+                        Collections.sort(getUrn());
+                        Collections.reverse(getUrn());
+
                     }
                 }
-                synchronized (this) {
-                    Collections.sort(Urn);
-                    Collections.reverse(Urn);
-                    count++;
-                }
+                count++;
+
             }
 //              writeToFile(Urn.get(0));
             iteration++;
 
             // Stopping condition to minimize iteration for efficiency
-            synchronized (this) {
-                if (iteration == 0) {
-                    obj = Urn.get(0).getObjectiveVal();
-                } else if (itCount >= Constants.STOP_CONDITION) {
-                    break;
-                } else {
-                    if (Math.abs(Urn.get(0).getObjectiveVal() - obj) > 0.1) {
-                        obj = Urn.get(0).getObjectiveVal();
-                        itCount = 0;
-                    }
+//            synchronized (this) {
+            if (iteration == 0) {
+                obj = getUrn().get(0).getObjectiveVal();
+            } else if (it.intValue() >= Constants.STOP_CONDITION) {
+                break;
+            } else {
+                if (Math.abs(getUrn().get(0).getObjectiveVal() - obj) > 0.1) {
+                    obj = getUrn().get(0).getObjectiveVal();
+                    it = new AtomicInteger(0);
                 }
-                itCount++;
             }
+            it.getAndIncrement();
+//            }
         }
-        /*
-         * Uncomment to print entire urn at the end of run
-         */
-//        Iterator<Solution> iter = Urn.iterator();
-//        while (iter.hasNext()) {
-//            System.out.println(iter.next().toString());
-//        }
+
         System.out.println("Took " + iteration + " iterations.");
-//        System.out.println(Urn.get(0).toString());
-        return Urn.get(0).toString();
+        return getUrn().get(0).toString();
     }
 
     /**
@@ -378,6 +507,42 @@ public class Heuristics {
     }
 
     /** Algorithm that tries random solutions */
+    public void tryRandomRealsSolution() {
+        RealNumberSolution temp = new RealNumberSolution();
+
+        int iteration = 0;
+
+        while (iteration < Constants.MAX_ITERATIONS) {
+            temp.randomizeSolution();
+            temp.calcObjectiveVal();
+            synchronized (this) {
+                if (realsUrn.get(Constants.URN_SIZE - 1)
+                        .getObjectiveVal() < temp.getObjectiveVal()) {
+//                    boolean isSame = false;
+//                    for (int i = 0; i < Constants.URN_SIZE; i++) {
+//                        if (Math.abs(realsUrn.get(i).getObjectiveVal()
+//                                - temp.getObjectiveVal()) < 1.0) {
+//                            isSame = true;
+//                        }
+//                    }
+//
+//                    if (isSame) {
+//                        break;
+//                    }
+
+                    realsUrn.remove(Constants.URN_SIZE - 1);
+                    realsUrn.add(temp);
+
+                    Collections.sort(realsUrn);
+                    Collections.reverse(realsUrn);
+                }
+            }
+            iteration++;
+        }
+        System.out.println("Took " + iteration + " iterations.");
+    }
+
+    /** Algorithm that tries random solutions */
     public void tryRandomSolution() {
         Solution temp = new Solution();
 
@@ -387,31 +552,30 @@ public class Heuristics {
             temp.randomizeSolution();
             temp.calcObjectiveVal();
             synchronized (this) {
-                if (Urn.get(Constants.URN_SIZE.intValue() - 1)
-                        .getObjectiveVal() < temp.getObjectiveVal()) {
-                    boolean isSame = false;
-                    for (int i = 0; i < Constants.URN_SIZE.intValue(); i++) {
-                        if (Math.abs(Urn.get(i).getObjectiveVal()
-                                - temp.getObjectiveVal()) < 0.01) {
-                            isSame = true;
-                        }
-                    }
+                if (getUrn().get(Constants.URN_SIZE - 1).getObjectiveVal() < temp
+                        .getObjectiveVal()) {
+//                    boolean isSame = false;
+//                    for (int i = 0; i < Constants.URN_SIZE; i++) {
+//                        if (Math.abs(getUrn().get(i).getObjectiveVal()
+//                                - temp.getObjectiveVal()) < 0.01) {
+//                            isSame = true;
+//                        }
+//                    }
+//
+//                    if (isSame) {
+//                        break;
+//                    }
 
-                    if (isSame) {
-                        break;
-                    }
+                    getUrn().remove(Constants.URN_SIZE - 1);
+                    getUrn().add(temp);
 
-                    Urn.remove(Constants.URN_SIZE.intValue() - 1);
-                    Urn.add(temp);
-
-                    Collections.sort(Urn);
-                    Collections.reverse(Urn);
+                    Collections.sort(getUrn());
+                    Collections.reverse(getUrn());
                 }
             }
-            synchronized (this) {
-                iteration++;
-            }
+            iteration++;
         }
+        System.out.println("Took " + iteration + " iterations.");
     }
 
     /**
@@ -448,10 +612,10 @@ public class Heuristics {
             while (count < Constants.MAX_REPS) {
                 TwoDSolution temp = new TwoDSolution(random.getX());
                 temp.calcObjectiveVal();
-                if (twoDUrn.get(Constants.URN_SIZE.intValue() - 1)
-                        .getObjectiveVal() < temp.getObjectiveVal()) {
+                if (twoDUrn.get(Constants.URN_SIZE - 1).getObjectiveVal() < temp
+                        .getObjectiveVal()) {
                     boolean isSame = false;
-                    for (int i = 0; i < Constants.URN_SIZE.intValue(); i++) {
+                    for (int i = 0; i < Constants.URN_SIZE; i++) {
                         if (Math.abs(twoDUrn.get(i).getObjectiveVal()
                                 - temp.getObjectiveVal()) < 0.00000001) {
                             isSame = true;
@@ -461,21 +625,17 @@ public class Heuristics {
                     if (isSame) {
                         break;
                     }
-                    twoDUrn.remove(Constants.URN_SIZE.intValue() - 1);
+                    twoDUrn.remove(Constants.URN_SIZE - 1);
                     twoDUrn.add(temp);
-                }
 
-                Collections.sort(twoDUrn);
-                Collections.reverse(twoDUrn);
+                    Collections.sort(twoDUrn);
+                    Collections.reverse(twoDUrn);
+                }
                 count++;
             }
 //              writeToFile(twoDUrn.get(0));
             iteration++;
         }
-//        Iterator<TwoDSolution> iter = twoDUrn.iterator();
-//        while (iter.hasNext()) {
-//            System.out.println(iter.next().toString());
-//        }
         return twoDUrn.get(0).toString();
     }
 
@@ -487,7 +647,7 @@ public class Heuristics {
         // Create threads
         for (int i = 0; i < Constants.NUM_THREADS; i++) {
             threads.add(new OptimizationThread(
-                    Constants.EIGHTY_TWENTY_ALL_REALS, this));
+                    Constants.THREAD_TYPE, this));
         }
 
         // Start threads
@@ -518,8 +678,8 @@ public class Heuristics {
         long startTime = System.nanoTime();
 
         Heuristics h = new Heuristics();
-//        h.populateUrn();
-        h.populateRealsUrn();
+        h.populateUrn();
+//        h.populateRealsUrn();
         h.initializeThreads();
 //        h.populateTwoDUrn();
 
@@ -528,20 +688,27 @@ public class Heuristics {
 //        String resultTwo = h.simulatedAnnealingAlgorithm();
 //        String realsResult = h.eightyTwentyAllRealsAlgorithm();
 
-//        String tResult = h.Urn.get(0).toString();
-        String tAllRealsResult = h.realsUrn.get(0).toString();
+        String tResult = h.getUrn().get(0).toString();
+//        String tAllRealsResult = h.realsUrn.get(0).toString();
+//        String tMultiUrnAllRealsResult = h.best.toString();
 
 //        System.out.println("Algorithm optimal found: " + r);
 //        System.out.println("Algorithm optimal found: " + result);
 //        System.out.println("Algorithm optimal found: " + resultTwo);
-//        System.out.println("Algorithm optimal found: " + tResult);
+        System.out.println("Algorithm optimal found: " + tResult);
 //        System.out.println("Algorithm optimal found: " + realsResult);
-        System.out.println("Algorithm optimal found: " + tAllRealsResult);
+//        System.out.println("Algorithm optimal found: " + tAllRealsResult);
+//        System.out
+//                .println("Algorithm optimal found: " + tMultiUrnAllRealsResult);
 
         long endTime = System.nanoTime();
         long totalTime = endTime - startTime;
         System.out.println(
                 "Program took " + ((double) totalTime / (Math.pow(10, 9)))
                         + " seconds to run.");
+    }
+
+    public List<Solution> getUrn() {
+        return Urn;
     }
 }

@@ -1,7 +1,6 @@
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Constants file
@@ -10,11 +9,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Constants {
 
+    /** Two dimensional function threead algorithm name */
+    public static final String TWO_DIMENSION = "twoD";
+
     /** Eighty twenty algorithm thread name */
     public static final String EIGHTY_TWENTY = "eightyTwenty";
 
+    /** Eighty twenty all reals algorithm thread name with multiple urns */
+    public static final String EIGHTY_TWENTY_ALL_REALS_MULTI_URNS = "eightyTwentyAllRealsMultiUrns";
+
     /** Random algorithm thread name */
     public static final String RANDOM = "Random";
+
+    /** Random reals algorithm thread name */
+    public static final String RANDOM_REALS = "RandomReals";
 
     /** Eighty twenty all reals algorithm thread name */
     public static final String EIGHTY_TWENTY_ALL_REALS = "eightyTwentyAllReals";
@@ -32,13 +40,13 @@ public class Constants {
     public static final int MAX_REPS = 1;
 
     /** Max number of iterations of the entire algorithm */
-    public static final int MAX_ITERATIONS = 50000000;
+    public static long MAX_ITERATIONS = 25000;
 
     /**
      * Size of urn holding top optimal solutions - ideally less than or equal to
      * max reps
      */
-    public static final AtomicInteger URN_SIZE = new AtomicInteger(100);
+    public static final int URN_SIZE = 100;
 
     /** Range of possible x values */
     public static final List<Integer> X_RANGE = Arrays.asList(-5, -4, -3, -2,
@@ -72,8 +80,10 @@ public class Constants {
             -1, 3, -3, 5, 5, 4, -3, -4, 4, 2, 3, 3, -4, -1, -2);
 
     /** Constants for number of threads to be run */
-    public static final int NUM_THREADS = 7;
+    public static int NUM_THREADS = 1;
 
     /** Stopping condition when optimal is found for all threads */
-    public static final int STOP_CONDITION = 50000000;
+    public static long STOP_CONDITION = 10000;
+
+    public static String THREAD_TYPE = "Random";
 }

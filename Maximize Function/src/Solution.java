@@ -34,9 +34,8 @@ public class Solution implements Comparable<Solution> {
         for (int i = 0; i < Constants.X_LIST_SIZE; i++) {
             xValues.add(new Integer(-5));
         }
-        // Setting objective value to -10^307
+        // Setting objective value to -10^307 for dummy purposes
         objectiveVal = (-Math.pow(10, 307));
-//        randMultiplier = (rand.nextInt((120 - 80) + 1) + 80) / 100.0;
     }
 
     /**
@@ -63,7 +62,7 @@ public class Solution implements Comparable<Solution> {
             }
             xValues.add(i);
         }
-//        randMultiplier = (rand.nextInt((120 - 80) + 1) + 80) / 100.0;
+
         // Pre calculation objective value
         objectiveVal = 1.0;
     }
@@ -103,8 +102,7 @@ public class Solution implements Comparable<Solution> {
                     * Math.pow(xValues.get(i), 2));
             count++;
         }
-        // Set random multiplier between .8 and 1.2
-//        randMultiplier = (rand.nextInt((120 - 80) + 1) + 80) / 100.0;
+
         // Multiply objective value by randMultiplier
         objectiveVal *= randMultiplier;
     }

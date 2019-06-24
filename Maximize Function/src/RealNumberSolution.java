@@ -2,6 +2,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Class that represents the object to hold a possible 2 dimensional function
+ * solution
+ * 
+ * @author Nic Falcione & Corinne Fair
+ */
 public class RealNumberSolution implements Comparable<RealNumberSolution> {
 
     /** The ArrayList of xValues */
@@ -28,9 +34,8 @@ public class RealNumberSolution implements Comparable<RealNumberSolution> {
         for (int i = 0; i < Constants.X_LIST_SIZE; i++) {
             xValues.add(new Double(-5.0));
         }
-        // Setting objective value to -10^307
+        // Setting objective value to -10^307 for dummy solution
         objectiveVal = (-Math.pow(10, 307));
-//        randMultiplier = (rand.nextInt((120 - 80) + 1) + 80) / 100.0;
     }
 
     /**
@@ -58,7 +63,6 @@ public class RealNumberSolution implements Comparable<RealNumberSolution> {
             }
             xValues.add(i);
         }
-//        randMultiplier = (rand.nextInt((120 - 80) + 1) + 80) / 100.0;
         // Pre calculation objective value
         objectiveVal = 1.0;
     }
@@ -98,8 +102,7 @@ public class RealNumberSolution implements Comparable<RealNumberSolution> {
                     * Math.pow(xValues.get(i), 2));
             count++;
         }
-        // Set random multiplier between .8 and 1.2
-//        randMultiplier = (rand.nextInt((120 - 80) + 1) + 80) / 100.0;
+
         // Multiply objective value by randMultiplier
         objectiveVal *= randMultiplier;
     }
@@ -184,11 +187,12 @@ public class RealNumberSolution implements Comparable<RealNumberSolution> {
      *         Solution is greater than other Solution, 0 if they are equal
      */
     public int compareTo(RealNumberSolution o) {
-        if (this.objectiveVal - o.objectiveVal < 0.01) {
-            return -1;
-        } else if (this.objectiveVal - o.objectiveVal > 0.01) {
-            return 1;
-        }
-        return 0;
+//        if (this.objectiveVal - o.objectiveVal < 0.001) {
+//            return -1;
+//        } else if (this.objectiveVal - o.objectiveVal > 0.001) {
+//            return 1;
+//        }
+//        return 0;
+        return Double.compare(this.objectiveVal, o.objectiveVal);
     }
 }
