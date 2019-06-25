@@ -355,7 +355,8 @@ public class Heuristics {
                     synchronized (this) {
                         int randIndex = rand.nextInt(
                                 ((Constants.URN_SIZE - 1) - 0 + 1) + 0);
-                        random = new Solution(getUrn().get(randIndex).getxValues());
+                        random = new Solution(
+                                getUrn().get(randIndex).getxValues());
                         for (int i = 0; i < Constants.X_LIST_SIZE; i++) {
                             if (getUrn().get(0).getxValues().get(i) != random
                                     .getxValues().get(i)) {
@@ -380,7 +381,8 @@ public class Heuristics {
                 double max = 0.0;
 
                 synchronized (this) {
-                    max = getUrn().get(Constants.URN_SIZE - 1).getObjectiveVal();
+                    max = getUrn().get(Constants.URN_SIZE - 1)
+                            .getObjectiveVal();
 
                     if (max < temp.getObjectiveVal()) {
                         boolean isSame = false;
@@ -549,11 +551,12 @@ public class Heuristics {
         int iteration = 0;
 
         while (iteration < Constants.MAX_ITERATIONS) {
-            temp.randomizeSolution();
-            temp.calcObjectiveVal();
+            Solution rand = new Solution(temp.getxValues());
+            rand.randomizeSolution();
+            rand.calcObjectiveVal();
             synchronized (this) {
-                if (getUrn().get(Constants.URN_SIZE - 1).getObjectiveVal() < temp
-                        .getObjectiveVal()) {
+                if (getUrn().get(Constants.URN_SIZE - 1)
+                        .getObjectiveVal() < rand.getObjectiveVal()) {
 //                    boolean isSame = false;
 //                    for (int i = 0; i < Constants.URN_SIZE; i++) {
 //                        if (Math.abs(getUrn().get(i).getObjectiveVal()
@@ -567,7 +570,7 @@ public class Heuristics {
 //                    }
 
                     getUrn().remove(Constants.URN_SIZE - 1);
-                    getUrn().add(temp);
+                    getUrn().add(rand);
 
                     Collections.sort(getUrn());
                     Collections.reverse(getUrn());
@@ -646,8 +649,7 @@ public class Heuristics {
 
         // Create threads
         for (int i = 0; i < Constants.NUM_THREADS; i++) {
-            threads.add(new OptimizationThread(
-                    Constants.THREAD_TYPE, this));
+            threads.add(new OptimizationThread(Constants.THREAD_TYPE, this));
         }
 
         // Start threads

@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -16,7 +17,7 @@ import javax.swing.UIManager;
  * The front end Swing frame for the heuristics program
  * 
  * @author Nic Falcione
- * @version 6/20/19
+ * @version 6/24/19
  */
 @SuppressWarnings("serial")
 public class HeuristicFrame extends JFrame {
@@ -38,8 +39,13 @@ public class HeuristicFrame extends JFrame {
         userThreads.setFont(font);
         JLabel threadType = new JLabel("Thread type? ");
         threadType.setFont(font);
-        JTextField userThreadsType = new JTextField();
-        userThreadsType.setFont(font);
+
+        String[] threadTypes = new String[] { "Random", "eightyTwenty" };
+        JComboBox<String> threadList = new JComboBox<String>(threadTypes);
+        threadList.setFont(font);
+
+//        JTextField userThreadsType = new JTextField();
+//        userThreadsType.setFont(font);
         JLabel iterations = new JLabel("Max Iterations: ");
         iterations.setFont(font);
         JTextField userIterations = new JTextField();
@@ -54,7 +60,7 @@ public class HeuristicFrame extends JFrame {
         panel.add(threads);
         panel.add(userThreads);
         panel.add(threadType);
-        panel.add(userThreadsType);
+        panel.add(threadList);
         panel.add(iterations);
         panel.add(userIterations);
         panel.add(stopCondition);
@@ -69,7 +75,7 @@ public class HeuristicFrame extends JFrame {
                 Constants.STOP_CONDITION = Long.parseLong(userStop.getText());
                 Constants.MAX_ITERATIONS = Long
                         .parseLong(userIterations.getText());
-                Constants.THREAD_TYPE = userThreadsType.getText();
+                Constants.THREAD_TYPE = (String) threadList.getSelectedItem();
 
                 // Keep track of start time
                 long startTime = System.nanoTime();
