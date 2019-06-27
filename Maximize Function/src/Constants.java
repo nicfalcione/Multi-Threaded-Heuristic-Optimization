@@ -6,6 +6,7 @@ import java.util.List;
  * Constants file
  * 
  * @author Nic Falcione & Corinne Fair
+ * @version 6/24/2019
  */
 public class Constants {
 
@@ -85,5 +86,6 @@ public class Constants {
     /** Stopping condition when optimal is found for all threads */
     public static long STOP_CONDITION = 10000;
 
+    /** Constant to hold Thread Type to be run */
     public static String THREAD_TYPE = "Random";
 }

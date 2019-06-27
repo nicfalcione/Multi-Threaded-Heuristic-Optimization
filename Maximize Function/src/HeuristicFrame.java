@@ -22,9 +22,12 @@ import javax.swing.UIManager;
 @SuppressWarnings("serial")
 public class HeuristicFrame extends JFrame {
 
+    /**
+     * Constructor to begin a new GUI Frame
+     */
     public HeuristicFrame() {
-        this.setTitle("Heuristic Optimization Demo");
-        this.setSize(900, 260);
+        setTitle("Heuristic Optimization Demo");
+        setSize(900, 260);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -44,8 +47,6 @@ public class HeuristicFrame extends JFrame {
         JComboBox<String> threadList = new JComboBox<String>(threadTypes);
         threadList.setFont(font);
 
-//        JTextField userThreadsType = new JTextField();
-//        userThreadsType.setFont(font);
         JLabel iterations = new JLabel("Max Iterations: ");
         iterations.setFont(font);
         JTextField userIterations = new JTextField();
@@ -69,6 +70,11 @@ public class HeuristicFrame extends JFrame {
 
         calculate.addActionListener(new ActionListener() {
 
+            /**
+             * ActionListener interface implementation method
+             * 
+             * @param e Action to be caught
+             */
             @Override
             public void actionPerformed(ActionEvent e) {
                 Constants.NUM_THREADS = Integer.parseInt(userThreads.getText());
@@ -96,17 +102,17 @@ public class HeuristicFrame extends JFrame {
                                 + ((double) totalTime / (Math.pow(10, 9)))
                                 + " seconds to run.\n")
                                 + "Algorithm optimal found: " + tResult);
-//                System.out.println("Program took "
-//                        + ((double) totalTime / (Math.pow(10, 9)))
-//                        + " seconds to run.");
-//
-//                System.out.println("Algorithm optimal found: " + tResult);
             }
         });
 
         add(panel, BorderLayout.CENTER);
     }
 
+    /**
+     * Starts GUI Fram program
+     * 
+     * @param args String command line arguments
+     */
     public static void main(String[] args) {
         JFrame f = new HeuristicFrame();
         f.setVisible(true);

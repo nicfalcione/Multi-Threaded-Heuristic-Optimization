@@ -6,7 +6,7 @@ import java.util.Random;
  * Solution Object Class
  * 
  * @author Nic Falcione & Corinne Fair
- *
+ * @version 6/24/2019
  */
 public class Solution implements Comparable<Solution> {
 

@@ -4,7 +4,7 @@ import java.util.ArrayList;
  * Thread object class for each algorithm
  * 
  * @author Nic Falcione & Corinne Fair
- *
+ * @version 6/24/2019
  */
 public class OptimizationThread extends Thread {
 

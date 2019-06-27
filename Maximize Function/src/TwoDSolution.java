@@ -4,7 +4,7 @@ import java.util.Random;
  * Two Dimensional Solution object class
  * 
  * @author Nic Falcione & Corrine Fair
- *
+ * @version 6/24/2019
  */
 public class TwoDSolution implements Comparable<TwoDSolution> {
 

@@ -7,6 +7,7 @@ import java.util.Random;
  * solution
  * 
  * @author Nic Falcione & Corinne Fair
+ * @version 6/24/2019
  */
 public class RealNumberSolution implements Comparable<RealNumberSolution> {
 
@@ -187,12 +188,6 @@ public class RealNumberSolution implements Comparable<RealNumberSolution> {
      *         Solution is greater than other Solution, 0 if they are equal
      */
     public int compareTo(RealNumberSolution o) {
-//        if (this.objectiveVal - o.objectiveVal < 0.001) {
-//            return -1;
-//        } else if (this.objectiveVal - o.objectiveVal > 0.001) {
-//            return 1;
-//        }
-//        return 0;
         return Double.compare(this.objectiveVal, o.objectiveVal);
     }
 }

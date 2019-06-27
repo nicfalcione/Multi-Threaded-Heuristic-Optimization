@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
  * Solution Object Test class
  * 
  * @author Nic Falcione & Corrine Fair
- *
+ * @version 6/24/2019
  */
 class SolutionTest {
 
